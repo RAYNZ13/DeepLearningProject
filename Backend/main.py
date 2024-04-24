@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
+import data_helper
 
 app = FastAPI()
 
@@ -16,8 +17,23 @@ async def handle_request(request: Request):
     output_contexts = payload.get("queryResult").get("outputContexts")
     
     if intent == "track order - context: ongoing-tracking":
-        return JSONResponse(content=
-            {"fulfillmentText": f"Received =={intent}== in the backend"})
+        return track_order(parameters)
+        # return JSONResponse(content={
+        #     "fulfillmentText":f"Recieved =={intent}== in the backend"
+        # })
+        
     
-def    
+def track_order(parameters : dict):
+    order_id = int(parameters['number'])
+    order_status = data_helper.get_order_status(order_id)
+    
+    if order_status:
+        fulfillment_Text = f"The order status for order id: {order_id} is {order_status}"
+    else :
+        fulfillment_Text = f"Sorry, we could not find any order with order id: {order_id}"
+        
+    return JSONResponse(content={
+        "fulfillmentText": fulfillment_Text
+    })
+    
         

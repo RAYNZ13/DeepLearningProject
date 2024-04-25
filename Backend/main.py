@@ -5,6 +5,11 @@ import data_helper
 
 app = FastAPI()
 
+#a new dictionary to store the order details
+inprogress_orders = {
+    
+}
+
 @app.post("/")
 async def handle_request(request: Request):
     #retrive the JSON data from the request
@@ -16,12 +21,38 @@ async def handle_request(request: Request):
     parameters = payload.get("queryResult").get("parameters")
     output_contexts = payload.get("queryResult").get("outputContexts")
     
-    if intent == "track order - context: ongoing-tracking":
-        return track_order(parameters)
-        # return JSONResponse(content={
-        #     "fulfillmentText":f"Recieved =={intent}== in the backend"
-        # })
+    #create a dictionary as a routing table for the intents with the functions to avoid the ugly if else
+    intent_handler_dict = {
+        #intent : fucntion
+        'Order.add - context: ongoing-order' : add_to_order,
+        # 'order.remove - context: ongoing-order' : remove_from_order,
+        # 'order.complete - context: ongoing-order' : complete_order,
+        'track order - context: ongoing-tracking' : track_order
+    }
+    
+    return intent_handler_dict[intent](parameters)
+
+#add to order function
+def add_to_order(parameters : dict):
+    food_item = parameters["food-items"]
+    quantity = parameters["number"]
+    
+    if len(food_item) != len(quantity):
+        fulfillment_text = "Sorry I didn't understand the order. Can you please specify the food items and qunatity again?"
+    else:
+        fulfillment_text = f"Recived {food_item} and {quantity} in the backend"
         
+    return JSONResponse(content={
+        "fulfillmentText": fulfillment_text
+    })
+        
+    
+    # if intent == "track order - context: ongoing-tracking":
+    #     return track_order(parameters)
+    #     # return JSONResponse(content={
+    #     #     "fulfillmentText":f"Recieved =={intent}== in the backend"
+    #     # })
+       
     
 def track_order(parameters : dict):
     order_id = int(parameters['number'])

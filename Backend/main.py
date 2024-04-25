@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
 import data_helper
+import generic_helper
 
 app = FastAPI()
 
@@ -21,6 +22,8 @@ async def handle_request(request: Request):
     parameters = payload.get("queryResult").get("parameters")
     output_contexts = payload.get("queryResult").get("outputContexts")
     
+    session_ID = generic_helper.extract_sessionID(output_contexts[0]['name'])
+    
     #create a dictionary as a routing table for the intents with the functions to avoid the ugly if else
     intent_handler_dict = {
         #intent : fucntion
@@ -30,7 +33,9 @@ async def handle_request(request: Request):
         'track order - context: ongoing-tracking' : track_order
     }
     
-    return intent_handler_dict[intent](parameters)
+    return intent_handler_dict[intent](parameters, session_ID)
+
+
 
 #add to order function
 def add_to_order(parameters : dict):

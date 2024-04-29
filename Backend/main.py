@@ -42,7 +42,7 @@ def remove_from_order(parameter : dict, session_ID : str):
         })
     else :
         current_order =  inprogress_orders[session_ID]
-        food_items : parameter["food-item"]
+        food_items = parameter["food-items"]
         
         #to keep track of the removed item and the items that are not found
         removed_items = []
@@ -150,14 +150,14 @@ def save_to_database(order : dict):
        
 
     
-def track_order(parameters : dict):
+def track_order(parameters : dict, session_ID: str):
     order_id = int(parameters['number'])
     order_status = data_helper.get_order_status(order_id)
     
     if order_status:
         fulfillment_text = f"The order status for order id: {order_id} is {order_status}"
     else :
-        fulfillment_text = f"Sorry, we could not find any order with order id: {order_id}"
+        fulfillment_text = f"Sorry, No order found with order id: {order_id}"
         
     return JSONResponse(content={
         "fulfillmentText": fulfillment_text

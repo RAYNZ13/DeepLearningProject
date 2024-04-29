@@ -41,7 +41,7 @@ def insert_order_item(food_item, quantity, order_id):
     
     
     
-def insert_order_tracking(order_id, status):
+def insert_order_tracking(order_id:int , status:str):
     cursor = db_connection.cursor()
     
     #inserting the record in the order_tracking table
@@ -79,7 +79,7 @@ def get_order_status(order_id : int):
     cursor = db_connection.cursor()
     
     #sql query
-    query = f"SELECT status FROM order_tracking WHERE order_id = {order_id}"
+    query = "SELECT status FROM order_tracking WHERE order_id = %s"
     
     #execute the query
     cursor.execute(query, (order_id,))

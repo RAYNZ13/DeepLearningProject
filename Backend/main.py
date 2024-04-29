@@ -28,15 +28,48 @@ async def handle_request(request: Request):
     intent_handler_dict = {
         #intent : fucntion
         'Order.add - context: ongoing-order' : add_to_order,
-        # 'order.remove - context: ongoing-order' : remove_from_order,
+        'order.remove - context: ongoing-order' : remove_from_order,
         'order.complete - context: ongoing-order' : complete_order,
         'track order - context: ongoing-tracking' : track_order
     }
     
     return intent_handler_dict[intent](parameters, session_ID)
 
+def remove_from_order(parameter : dict, session_ID : str):
+    if session_ID not in inprogress_orders:
+        return JSONResponse(content={
+            "fulfillmentText" : "I'm having a trouble finding your order. Sorry! Can you please place a order once again ?"
+        })
+    else :
+        current_order =  inprogress_orders[session_ID]
+        food_items : parameter["food-item"]
+        
+        #to keep track of the removed item and the items that are not found
+        removed_items = []
+        no_such_items = []
+        
+        #to remove item
+        for item in food_items:
+            if item not in current_order:
+                no_such_items.append(item)
+            else : 
+                removed_items.append(item)
+                del current_order[item]
+        if len(removed_items) > 0 :
+            fulfillment_text = f'Removed {",".join(removed_items)} from your order'
+        
+        if len(no_such_items) > 0:
+            fulfillment_text = f'Your current order does not have {",".join(no_such_items)}'
 
-
+        if len(current_order.keys()) == 0:
+            fulfillment_text += "Your order is empty!"
+        else:
+            current_order_str = generic_helper.get_str_from_food_dict(current_order)
+            fulfillment_text += f"Here's what is left in yout order: {current_order_str}"
+            
+        return JSONResponse(content={
+            "fulfillmentText": fulfillment_text
+        })
 #add to order function
 def add_to_order(parameters : dict, session_ID : str):
     food_item = parameters["food-items"]
@@ -122,12 +155,12 @@ def track_order(parameters : dict):
     order_status = data_helper.get_order_status(order_id)
     
     if order_status:
-        fulfillment_Text = f"The order status for order id: {order_id} is {order_status}"
+        fulfillment_text = f"The order status for order id: {order_id} is {order_status}"
     else :
-        fulfillment_Text = f"Sorry, we could not find any order with order id: {order_id}"
+        fulfillment_text = f"Sorry, we could not find any order with order id: {order_id}"
         
     return JSONResponse(content={
-        "fulfillmentText": fulfillment_Text
+        "fulfillmentText": fulfillment_text
     })
     
         

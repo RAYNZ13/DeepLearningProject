@@ -13,7 +13,8 @@ def insert_order_item(food_item, quantity, order_id):
         cursor = db_connection.cursor()
         
         #calling the stored procedure
-        cursor.callproc("insert_order_item", (food_item, quantity, order_id))
+        cursor.callproc('insert_order_item', (food_item, quantity, order_id))
+        print("Order item inserted successfully!")
         
         #commit the transaction
         db_connection.commit()
